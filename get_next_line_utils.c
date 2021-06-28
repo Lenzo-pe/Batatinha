@@ -1,5 +1,13 @@
 #include "get_next_line.h"
 
+void	ft_strdel(char **str)
+{
+	if (!(str && *str))
+		return ;
+	free(*str);
+	*str = NULL;
+}
+
 static char	*ft_strchr(const char *str, int c)
 {
 	while (*str)
@@ -138,8 +146,7 @@ static ssize_t	get_return(char **line, char **saved, int c)
 		free(temp);
 		return (1);
 	}
-	free(*saved);
-	*saved = NULL;
+	ft_strdel(saved);
 	return (0);
 }
 
@@ -164,9 +171,11 @@ ssize_t	get_next_delim(char **line, size_t n, int c, int fd)
 			break ;
 		nbytes = read(fd, *line, n);
 	}
-	free(*line);
-	*line = NULL;
+	ft_strdel(line);
 	if (nbytes < 0)
+	{
+		ft_strdel(&saved);
 		return (-1);
+	}
 	return (get_return(line, &saved, c));
 }
