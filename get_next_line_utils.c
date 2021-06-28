@@ -150,17 +150,24 @@ static ssize_t	get_return(char **line, char **saved, int c)
 	return (0);
 }
 
+ssize_t	init(char **line,char **saved, size_t n, int fd)
+{
+	if (fd < 0 || !line)
+		return (-1);
+	if (!saved)
+		*saved = ft_strdup("");
+	*line = (char *)malloc(sizeof(char) * (n + 1));
+	if (!*line)
+		return (-1);
+	return (0);
+}
+
 ssize_t	get_next_delim(char **line, size_t n, int c, int fd)
 {
 	static char	*saved;
 	int			nbytes;
 
-	if (fd < 0 || !line)
-		return (-1);
-	if (!saved)
-		saved = ft_strdup("");
-	*line = (char *)malloc(sizeof(char) * (n + 1));
-	if (!*line)
+	if (init(line, &saved, n, fd))
 		return (-1);
 	nbytes = read(fd, *line, n);
 	while (nbytes > 0)
