@@ -153,6 +153,8 @@ ssize_t	get_next_delim(char **line, size_t n, int c, int fd)
 	if (!saved)
 		saved = ft_strdup("");
 	*line = (char *)malloc(sizeof(char) * (n + 1));
+	if (!*line)
+		return (-1);
 	nbytes = read(fd, *line, n);
 	while (nbytes > 0)
 	{
@@ -163,6 +165,7 @@ ssize_t	get_next_delim(char **line, size_t n, int c, int fd)
 		nbytes = read(fd, *line, n);
 	}
 	free(*line);
+	*line = NULL;
 	if (nbytes < 0)
 		return (-1);
 	return (get_return(line, &saved, c));
