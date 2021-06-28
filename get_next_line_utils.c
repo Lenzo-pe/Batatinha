@@ -154,7 +154,7 @@ ssize_t	init(char **line,char **saved, size_t n, int fd)
 {
 	if (fd < 0 || !line)
 		return (-1);
-	if (!saved)
+	if (!*saved)
 		*saved = ft_strdup("");
 	*line = (char *)malloc(sizeof(char) * (n + 1));
 	if (!*line)
