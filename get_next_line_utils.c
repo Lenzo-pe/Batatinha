@@ -162,24 +162,32 @@ ssize_t	init(char **line,char **saved, size_t n, int fd)
 	return (0);
 }
 
-ssize_t	get_next_delim(char **line, size_t n, int c, int fd)
+ssize_t	get_delim(char **line, char **saved, size_t n, int c, int fd)
 {
-	static char	*saved;
 	int			nbytes;
 
-	if (init(line, &saved, n, fd))
-		return (-1);
 	nbytes = read(fd, *line, n);
 	while (nbytes > 0)
 	{
 		(*line)[nbytes] = '\0';
-		saved = ft_rejoin(saved, *line);
+		*saved = ft_rejoin(*saved, *line);
 		if (ft_strchr(*line, c))
 			break ;
 		nbytes = read(fd, *line, n);
 	}
 	ft_strdel(line);
 	if (nbytes < 0)
+		return (-1);
+	return (0);
+}
+
+ssize_t	get_next_delim(char **line, size_t n, int c, int fd)
+{
+	static char	*saved;
+
+	if (init(line, &saved, n, fd))
+		return (-1);
+	if (get_delim(line, &saved, n, c, fd))
 	{
 		ft_strdel(&saved);
 		return (-1);
