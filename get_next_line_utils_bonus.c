@@ -1,4 +1,4 @@
-#include "get_next_line.h"
+#include "get_next_line_bonus.h"
 
 void	ft_strdel(char **str)
 {
@@ -134,12 +134,32 @@ static char	*ft_rejoin(char *s1, char const *s2)
 	return (ptr);
 }
 
-static ssize_t	init(char **line,char **saved, size_t n, int fd)
+t_list	*lst_new(void *content, int fd)
+{
+	t_list *lst;
+
+	lst = malloc(sizeof(t_list));
+	lst->saved = content;
+	lst->next = NULL;
+	lst->index = fd;
+	return (lst);
+}
+
+static void lst_init(t_list **lst, int fd)
+{
+	if (!*lst)
+		*lst = lst_new(ft_strdup(""), fd);
+	else if ((*lst)->index != fd)
+		lst_init(&(*lst)->next, fd);
+	else if (!(*lst)->saved)
+		(*lst)->saved = ft_strdup("");
+}
+
+static ssize_t	init(char **line, t_list **lst, size_t n, int fd)
 {
 	if (fd < 0 || !line)
 		return (-1);
-	if (!*saved)
-		*saved = ft_strdup("");
+	lst_init(lst, fd);
 	*line = (char *)malloc(sizeof(char) * (n + 1));
 	if (!*line)
 		return (-1);
@@ -181,16 +201,26 @@ static ssize_t	get_return(char **line, char **saved, int c)
 	return (0);
 }
 
+static char	**get_saved(t_list *lst, int fd)
+{
+	while (lst->index != fd)
+		lst = lst->next;
+	return (&lst->saved);
+}
+
 ssize_t	get_next_delim(char **line, size_t n, int c, int fd)
 {
-	static char	*saved;
+	static t_list	*lst;
+	char			**saved;
 
-	if (init(line, &saved, n, fd))
+	if (init(line, &lst, n, fd))
 		return (-1);
-	if (get_delim(line, &saved, n, c, fd))
+	saved = NULL;
+	saved = get_saved(lst, fd);
+	if (get_delim(line, saved, n, c, fd))
 	{
-		ft_strdel(&saved);
+		ft_strdel(saved);
 		return (-1);
 	}
-	return (get_return(line, &saved, c));
+	return (get_return(line, saved, c));
 }
