@@ -166,6 +166,56 @@ static ssize_t	init(char **line, t_list **lst, size_t n, int fd)
 	return (0);
 }
 
+static void	ft_lstdel(t_list **lst)
+{
+	if (lst && *lst)
+	{
+		ft_strdel(&(*lst)->saved);
+		free(*lst);
+		*lst = NULL;
+	}
+}
+
+static void	ft_lstdeljoin(t_list **lst, t_list *del)
+{
+	t_list	*ptr;
+
+	ptr = *lst;
+	if (ptr == del)
+	{
+		*lst = (*lst)->next;
+		ft_lstdel(&del);
+		return ;
+	}
+	while (ptr->next != del)
+		ptr = ptr->next;
+	ptr->next = ptr->next->next;
+	ft_lstdel(&del);
+}
+
+static t_list	*lst_saved(t_list *lst, int fd)
+{
+	while (lst->index != fd)
+		lst = lst->next;
+	return (lst);
+}
+
+static ssize_t	get_return(char **line, t_list **lst, t_list **ptr, int c)
+{
+	char	*temp;
+
+	*line = ft_substr((*ptr)->saved, 0, ft_strclen((*ptr)->saved, c));
+	if (ft_strchr((*ptr)->saved, c))
+	{
+		temp = (*ptr)->saved;
+		(*ptr)->saved = ft_strdup(ft_strchr((*ptr)->saved, c) + 1);
+		free(temp);
+		return (1);
+	}
+	ft_lstdeljoin(lst, *ptr);
+	return (0);
+}
+
 static ssize_t	get_delim(char **line, char **saved, size_t n, int c, int fd)
 {
 	int			nbytes;
@@ -185,42 +235,18 @@ static ssize_t	get_delim(char **line, char **saved, size_t n, int c, int fd)
 	return (0);
 }
 
-static ssize_t	get_return(char **line, char **saved, int c)
-{
-	char	*temp;
-
-	*line = ft_substr(*saved, 0, ft_strclen(*saved, c));
-	if (ft_strchr(*saved, c))
-	{
-		temp = *saved;
-		*saved = ft_strdup(ft_strchr(*saved, c) + 1);
-		free(temp);
-		return (1);
-	}
-	ft_strdel(saved);
-	return (0);
-}
-
-static char	**get_saved(t_list *lst, int fd)
-{
-	while (lst->index != fd)
-		lst = lst->next;
-	return (&lst->saved);
-}
-
 ssize_t	get_next_delim(char **line, size_t n, int c, int fd)
 {
 	static t_list	*lst;
-	char			**saved;
+	t_list *ptr;
 
 	if (init(line, &lst, n, fd))
 		return (-1);
-	saved = NULL;
-	saved = get_saved(lst, fd);
-	if (get_delim(line, saved, n, c, fd))
+	ptr = lst_saved(lst, fd);
+	if (get_delim(line, &ptr->saved, n, c, fd))
 	{
-		ft_strdel(saved);
+		ft_strdel(&ptr->saved);
 		return (-1);
 	}
-	return (get_return(line, saved, c));
+	return (get_return(line, &lst, &ptr, c));
 }

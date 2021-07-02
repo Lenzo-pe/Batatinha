@@ -5,6 +5,8 @@
 #include <unistd.h>
 #include <stdlib.h>
 
+#define BUFFER_SIZE 30
+
 typedef struct	s_list
 {
 	short int		index;
