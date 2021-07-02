@@ -245,7 +245,7 @@ ssize_t	get_next_delim(char **line, size_t n, int c, int fd)
 	ptr = lst_saved(lst, fd);
 	if (get_delim(line, &ptr->saved, n, c, fd))
 	{
-		ft_strdel(&ptr->saved);
+		ft_lstdeljoin(&lst, ptr);
 		return (-1);
 	}
 	return (get_return(line, &lst, &ptr, c));
